@@ -27,7 +27,7 @@ type Sample struct {
 	Email string `json:"email"`
 }
 
-var Samples = map[string]Sample{}
+var Samples = map[string]*Sample{}
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +92,15 @@ func Get(w http.ResponseWriter, id string) error {
 		return nil
 	}
 
-	samplesMar, err := json.Marshal(Samples)
+	sampleSlice := make([]*Sample, 0, len(Samples))
+
+	for _, v := range Samples {
+		sampleSlice = append(sampleSlice, v)
+	}
+
+	fmt.Println("sample slice:", sampleSlice)
+
+	samplesMar, err := json.Marshal(sampleSlice)
 	if err != nil {
 		fmt.Fprintf(w, "not marshlized")
 	}
@@ -117,7 +125,7 @@ func Post(w http.ResponseWriter, data Sample) error {
 		return fmt.Errorf("fill in Email")
 	}
 
-	Samples[data.ID] = data
+	Samples[data.ID] = &data
 
 	samplesMar, err := json.Marshal(data)
 	if err != nil {
@@ -129,13 +137,14 @@ func Post(w http.ResponseWriter, data Sample) error {
 }
 
 func Delete(w http.ResponseWriter, id string) error {
-	fmt.Println("param: ", id)
 	if sample, ok := Samples[id]; ok {
-		samplesMar, err := json.Marshal(sample)
 		delete(Samples, id)
+		fmt.Println(Samples)
+		samplesMar, err := json.Marshal(sample)
 		if err != nil {
 			fmt.Errorf("not marshlized")
 		}
+
 		io.WriteString(w, string(samplesMar))
 		return nil
 	}
