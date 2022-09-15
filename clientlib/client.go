@@ -15,7 +15,6 @@ type Client struct {
 }
 
 func NewClient(client *http.Client, urlStr string) (*Client, error) {
-	// URLを生成
 	URL, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("url parse error")
@@ -67,73 +66,3 @@ func (c *Client) Do(ctx context.Context, req *http.Request, payload interface{})
 
 	return nil
 }
-
-//func (c *Client) Get(id string) (*Sample, error) {
-//	reqUrl := c.url + "?id=" + id + ""
-//	fmt.Println("reqUrl: ", reqUrl)
-//	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//	fmt.Println("get req: ", req)
-//	resp, err := c.Do(req)
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//	println(resp.StatusCode)
-//
-//	return resp, nil
-//}
-//
-//func (c *Client) List() (*[]Sample, error) {
-//	fmt.Println("c.url: ", c.url)
-//	req, err := http.NewRequest(http.MethodGet, c.url, nil)
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//	fmt.Println("list req: ", req)
-//	resp, err := c.Do(req)
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//	fmt.Println("list resp: ", resp)
-//	println(resp.StatusCode)
-//
-//	return resp, nil
-//}
-//func (c *Client) Create(body io.Reader) (*Sample, error) {
-//	sample := Sample{
-//		ID:    "aa",
-//		Name:  "Kyo",
-//		Email: "kyo@gmail.com",
-//	}
-//	sampleJSON, err := json.Marshal(sample)
-//	req, err := http.NewRequest(http.MethodPost, c.url, bytes.NewBuffer(sampleJSON))
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//
-//	if body != nil {
-//		req.Header.Set("Content-Type", "application/json")
-//	}
-//	resp, err := c.Do(req)
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//	println(resp.StatusCode)
-//
-//	return req, nil
-//}
-//func (c *Client) Delete(ctx context.Context, urlStr string, body io.Reader) (*Sample, error) {
-//	req, err := http.NewRequest(http.MethodDelete, urlStr, body)
-//	if err != nil {
-//		return nil, fmt.Errorf(": %w", err)
-//	}
-//
-//	if body != nil {
-//		req.Header.Set("Content-Type", "application/json")
-//	}
-//
-//	return req, nil
-//}
-//

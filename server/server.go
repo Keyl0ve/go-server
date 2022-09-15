@@ -7,20 +7,6 @@ import (
 	"net/http"
 )
 
-//func main() {
-//	h1 := func(w http.ResponseWriter, _ *http.Request) {
-//		io.WriteString(w, "Hello from a HandleFunc #1!\n")
-//	}
-//	h2 := func(w http.ResponseWriter, _ *http.Request) {
-//		io.WriteString(w, "Hello from a HandleFunc #2!\n")
-//	}
-//
-//	http.HandleFunc("/", h1)
-//	http.HandleFunc("/endpoint", h2)
-//
-//	log.Fatal(http.ListenAndServe(":8080", nil))
-//}
-
 type Sample struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
@@ -98,15 +84,12 @@ func Get(w http.ResponseWriter, id string) error {
 		sampleSlice = append(sampleSlice, v)
 	}
 
-	fmt.Println("sample slice:", sampleSlice)
-
 	samplesMar, err := json.Marshal(sampleSlice)
 	if err != nil {
 		fmt.Fprintf(w, "not marshlized")
 	}
 
 	io.WriteString(w, string(samplesMar))
-	fmt.Println("param: ", id)
 
 	return nil
 }
