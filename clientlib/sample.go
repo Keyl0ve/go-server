@@ -6,19 +6,26 @@ import (
 	"net/url"
 )
 
+type Sample struct {
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
+	Email        string  `json:"email"`
+	Books        []*Book `json:"book"`
+	FavoriteBook string  `json:"favoriteBook"`
+}
+
+type Book struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	ParentID string `json:"parentID"`
+}
+
 type GetSampleRequest struct {
 	id string
 }
-type Sample struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
 
 type CreateSampleRequest struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Sample
 }
 
 type DeleteSampleRequest struct {
@@ -50,12 +57,35 @@ func (c *Client) ListSample(ctx context.Context) ([]*Sample, error) {
 	}
 	return payload, nil
 }
+
 func (c *Client) CreateSample(ctx context.Context, input *CreateSampleRequest) (*Sample, error) {
-	body := CreateSampleRequest{
+
+	//for _, v := range input.Books {
+	body := CreateSampleRequest{Sample{
 		ID:    input.ID,
 		Name:  input.Name,
 		Email: input.Email,
+		Books: []*Book{
+			//{
+			//	ID:       v.ID,
+			//	Name:     v.Name,
+			//	ParentID: v.ParentID,
+			//},
+		},
+		FavoriteBook: input.FavoriteBook,
+	}}
+	//}
+	for _, v := range input.Books {
+		body.Books = append(body.Books, v)
 	}
+
+	fmt.Println("start:::")
+	fmt.Println(body.ID)
+	fmt.Println(body.Name)
+	fmt.Println(body.Email)
+	fmt.Println(body.Books[0].ID)
+	fmt.Println(body.Books[1].ID)
+	fmt.Println(body.Books[2].ID)
 
 	var payload Sample
 	if err := c.Post(ctx, c.url.String(), body, &payload); err != nil {

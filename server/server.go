@@ -8,9 +8,17 @@ import (
 )
 
 type Sample struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
+	Email        string  `json:"email"`
+	Books        []*Book `json:"book"`
+	FavoriteBook string  `json:"favoriteBook"`
+}
+
+type Book struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	ParentID string `json:"parentID"`
 }
 
 var Samples = map[string]*Sample{}
@@ -22,6 +30,16 @@ func main() {
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			fmt.Errorf("decode flow failed: %w", err)
 		}
+
+		//one := Sample{
+		//	ID:           "a",
+		//	Name:         "kyo",
+		//	Email:        "kyo@gmail.com",
+		//	Book:         Book{ID: "1", Name: "book1", ParentID: "parentIDa"},
+		//	FavoriteBook: "anpanman",
+		//}
+		//
+		//fmt.Println("sampleee: ", one)
 
 		switch r.Method {
 		case http.MethodGet:
@@ -122,7 +140,6 @@ func Post(w http.ResponseWriter, data Sample) error {
 func Delete(w http.ResponseWriter, id string) error {
 	if sample, ok := Samples[id]; ok {
 		delete(Samples, id)
-		fmt.Println(Samples)
 		samplesMar, err := json.Marshal(sample)
 		if err != nil {
 			fmt.Errorf("not marshlized")
