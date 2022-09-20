@@ -15,17 +15,13 @@ type Sample struct {
 }
 
 type Book struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	ParentID string `json:"parentID"`
+	BookID       string `json:"book_id"`
+	BookName     string `json:"book_name"`
+	BookParentID string `json:"book_parent_id"`
 }
 
 type GetSampleRequest struct {
 	id string
-}
-
-type CreateSampleRequest struct {
-	Sample
 }
 
 type DeleteSampleRequest struct {
@@ -40,10 +36,27 @@ func (i *GetSampleRequest) Query() url.Values {
 }
 
 func (c *Client) GetSample(ctx context.Context, id string) (*Sample, error) {
+	path := "sample"
 	query := c.url.Query()
 	query.Add("id", id)
 	var payload Sample
-	if err := c.Get(ctx, fmt.Sprintf("%s?%s", c.url.String(), query.Encode()), &payload); err != nil {
+	fmt.Println("get sample url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
+
+	if err := c.Get(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
+		return nil, fmt.Errorf(": %w", err)
+	}
+
+	return &payload, nil
+}
+
+func (c *Client) GetBook(ctx context.Context, bookID string) (*Book, error) {
+	path := "book"
+	query := c.url.Query()
+	query.Add("book_id", bookID)
+	var payload Book
+	fmt.Println("get book url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
+
+	if err := c.Get(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
 		return nil, fmt.Errorf(": %w", err)
 	}
 
@@ -58,37 +71,51 @@ func (c *Client) ListSample(ctx context.Context) ([]*Sample, error) {
 	return payload, nil
 }
 
-func (c *Client) CreateSample(ctx context.Context, input *CreateSampleRequest) (*Sample, error) {
-
+func (c *Client) CreateSample(ctx context.Context, input *Sample) (*Sample, error) {
+	path := "sample"
 	//for _, v := range input.Books {
-	body := CreateSampleRequest{Sample{
-		ID:    input.ID,
-		Name:  input.Name,
-		Email: input.Email,
-		Books: []*Book{
-			//{
-			//	ID:       v.ID,
-			//	Name:     v.Name,
-			//	ParentID: v.ParentID,
-			//},
-		},
+	body := Sample{
+		ID:           input.ID,
+		Name:         input.Name,
+		Email:        input.Email,
+		Books:        []*Book{},
 		FavoriteBook: input.FavoriteBook,
-	}}
-	//}
-	for _, v := range input.Books {
-		body.Books = append(body.Books, v)
 	}
 
 	fmt.Println("start:::")
 	fmt.Println(body.ID)
 	fmt.Println(body.Name)
 	fmt.Println(body.Email)
-	fmt.Println(body.Books[0].ID)
-	fmt.Println(body.Books[1].ID)
-	fmt.Println(body.Books[2].ID)
 
 	var payload Sample
-	if err := c.Post(ctx, c.url.String(), body, &payload); err != nil {
+	fmt.Println("sample post", fmt.Sprintf("%s%s", c.url.String(), path))
+	if err := c.Post(ctx, fmt.Sprintf("%s%s", c.url.String(), path), body, &payload); err != nil {
+		return nil, fmt.Errorf(": %w", err)
+	}
+
+	return &payload, nil
+}
+
+func (c *Client) CreateBook(ctx context.Context, input *Book) (*Book, error) {
+	path := "book"
+	body := Book{
+		BookID:       input.BookID,
+		BookName:     input.BookName,
+		BookParentID: input.BookParentID,
+	}
+
+	//Sample[input.ParentID]Book = append(Sample[input.ParentID]Book, body)
+
+	fmt.Println("this is body", body.BookID)
+	fmt.Println(body.BookName)
+	fmt.Println(body.BookParentID)
+
+	//query := c.url.Query()
+	//query.Add("id", input.BookParentID)
+
+	fmt.Println("book post: ", fmt.Sprintf("%s%s", c.url.String(), path))
+	var payload Book
+	if err := c.PostBook(ctx, fmt.Sprintf("%s%s", c.url.String(), path), body, &payload); err != nil {
 		return nil, fmt.Errorf(": %w", err)
 	}
 
