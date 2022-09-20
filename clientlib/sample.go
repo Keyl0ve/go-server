@@ -138,10 +138,26 @@ func (c *Client) CreateBook(ctx context.Context, input *Book) (*Book, error) {
 }
 
 func (c *Client) DeleteSample(ctx context.Context, id string) (*Sample, error) {
+	path := "sample"
 	query := c.url.Query()
 	query.Add("id", id)
 	var payload Sample
-	if err := c.Delete(ctx, fmt.Sprintf("%s?%s", c.url.String(), query.Encode()), &payload); err != nil {
+	fmt.Println("sample delete url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
+
+	if err := c.Delete(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
+		return nil, fmt.Errorf(": %w", err)
+	}
+
+	return &payload, nil
+}
+
+func (c *Client) DeleteBook(ctx context.Context, bookID string) (*Book, error) {
+	path := "book"
+	query := c.url.Query()
+	query.Add("book_id", bookID)
+	var payload Book
+	fmt.Println("book delete url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
+	if err := c.Delete(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
 		return nil, fmt.Errorf(": %w", err)
 	}
 
