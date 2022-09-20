@@ -126,7 +126,7 @@ func main() {
 			}
 
 		case http.MethodDelete:
-			param := r.URL.Query().Get("bookID")
+			param := r.URL.Query().Get("book_id")
 			if param == "" {
 				fmt.Fprintf(w, "please provide id: ")
 			}
@@ -285,14 +285,14 @@ func DeleteSample(w http.ResponseWriter, id string) error {
 }
 
 func DeleteBook(w http.ResponseWriter, id string) error {
-	if sample, ok := Samples[id]; ok {
-		delete(Samples, id)
-		samplesMar, err := json.Marshal(sample)
+	if book, ok := Books[id]; ok {
+		delete(Books, id)
+		booksMar, err := json.Marshal(book)
 		if err != nil {
 			fmt.Errorf("not marshlized")
 		}
 
-		w.Write(samplesMar)
+		w.Write(booksMar)
 		return nil
 	}
 

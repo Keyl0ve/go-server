@@ -164,8 +164,8 @@ func main() {
 		//fmt.Println("list favorite id: ", v.FavoriteBook)
 	}
 
-	fmt.Println("\nDELETE...")
-	deleteSample, err := client.DeleteSample(ctx, getSample.ID)
+	fmt.Println("\nDELETE sample...")
+	deleteSample, err := client.DeleteSample(ctx, inputSample.ID)
 	if err != nil {
 		fmt.Errorf("cannot delete sample: %w", err)
 	}
@@ -180,7 +180,23 @@ func main() {
 	}
 	fmt.Println("delete favorite id: ", deleteSample.FavoriteBook)
 
-	fmt.Println("LIST2...")
+	fmt.Println("\nDELETE book...")
+	deleteBook, err := client.DeleteBook(ctx, inputBook1.BookID)
+	if err != nil {
+		fmt.Errorf("cannot delete book: %w", err)
+	}
+
+	fmt.Println("delete book id: ", deleteBook.BookID)
+	fmt.Println("delete book name: ", deleteBook.BookName)
+	fmt.Println("delete book parentID: ", deleteBook.BookParentID)
+	//for i, v := range deleteSample.Books {
+	//	fmt.Println("created book[", i, "] id: ", "...", v.BookID)
+	//	fmt.Println("created book[", i, "] name: ", "...", v.BookName)
+	//	fmt.Println("created book[", i, "] parentID: ", "...", v.BookParentID)
+	//}
+	//fmt.Println("delete favorite id: ", deleteSample.FavoriteBook)
+
+	fmt.Println("\nLIST2 sample...")
 	listSample2, err := client.ListSample(ctx)
 	if err != nil {
 		fmt.Errorf("cannot list sample: %w", err)
@@ -195,5 +211,22 @@ func main() {
 			fmt.Println("created book[", i, "] id: ", "...", vv.BookParentID)
 		}
 		fmt.Println("list favorite id: ", v.FavoriteBook)
+	}
+
+	fmt.Println("\nLIST2 book...")
+	listBook2, err := client.ListBook(ctx)
+	if err != nil {
+		fmt.Errorf("cannot list book: %w", err)
+	}
+	for _, v := range listBook2 {
+		fmt.Println("list book id: ", v.BookID)
+		fmt.Println("list book name: ", v.BookName)
+		fmt.Println("list book email: ", v.BookParentID)
+		//for i, vv := range v.BookID {
+		//	fmt.Println("created book[", i, "] id: ", "...", vv)
+		//	fmt.Println("created book[", i, "] name: ", "...", vv.BookName)
+		//	fmt.Println("created book[", i, "] parentID: ", "...", vv.BookParentID)
+		//}
+		//fmt.Println("list favorite id: ", v.FavoriteBook)
 	}
 }
