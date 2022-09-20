@@ -74,7 +74,7 @@ func (c *Client) ListSample(ctx context.Context) ([]*Sample, error) {
 }
 
 func (c *Client) ListBook(ctx context.Context) ([]*Book, error) {
-	path := "sample"
+	path := "book"
 	var payload []*Book
 	fmt.Println("this is list book url", fmt.Sprintf("%s%s", c.url.String(), path))
 
