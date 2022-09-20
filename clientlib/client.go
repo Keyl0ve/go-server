@@ -61,8 +61,16 @@ func (c *Client) Do(ctx context.Context, req *http.Request, payload interface{})
 	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(payload); err != nil {
+		fmt.Println("this is error in Do: ", err)
 		return fmt.Errorf(": %w", err)
 	}
+	//fmt.Println("do payload ", payload)
+
+	//contents, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	return fmt.Errorf(": %w", err)
+	//}
+	//fmt.Println("contents", string(contents))
 
 	return nil
 }

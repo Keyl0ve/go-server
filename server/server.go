@@ -34,15 +34,32 @@ func main() {
 		switch r.Method {
 		case http.MethodGet:
 			param := r.URL.Query().Get("id")
-
-			if err := GetSample(w, param); err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				_, err := w.Write([]byte("get method failed: %s"))
-				if err != nil {
-					panic(err)
+			if param != "" {
+				fmt.Println("this is sample get req")
+				if err := GetSample(w, param); err != nil {
+					fmt.Println("bad request get")
+					w.WriteHeader(http.StatusBadRequest)
+					_, err := w.Write([]byte("get method failed: %s"))
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					fmt.Println("this is get req")
+					w.WriteHeader(http.StatusOK)
 				}
 			} else {
-				w.WriteHeader(http.StatusOK)
+				fmt.Println("this is sample list req")
+				if err := ListSample(w); err != nil {
+					fmt.Println("bad request get")
+					w.WriteHeader(http.StatusBadRequest)
+					_, err := w.Write([]byte("get method failed: %s"))
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					fmt.Println("this is list req")
+					w.WriteHeader(http.StatusOK)
+				}
 			}
 
 		case http.MethodPost:
@@ -132,24 +149,50 @@ func GetSample(w http.ResponseWriter, id string) error {
 	if sample, ok := Samples[id]; ok {
 		samplesMar, err := json.Marshal(sample)
 		if err != nil {
-			fmt.Fprintf(w, "not marshlized")
+			fmt.Println(w, "not marshlized")
 		}
+		fmt.Println("samplesMaraaaa", string(samplesMar))
 		w.Write(samplesMar)
+		fmt.Println("this is 1 get req")
 		return nil
 	}
 
+	sampleSlice := make([]*Sample, 0, len(Samples))
+
+	//for _, v := range Samples {
+	//	sampleSlice = append(sampleSlice, v)
+	//}
+
+	samplesMar, err := json.Marshal(sampleSlice)
+	if err != nil {
+		fmt.Println(w, "not marshlized")
+	}
+
+	w.Write(samplesMar)
+	fmt.Println("this is multi get req")
+
+	return nil
+}
+
+func ListSample(w http.ResponseWriter) error {
 	sampleSlice := make([]*Sample, 0, len(Samples))
 
 	for _, v := range Samples {
 		sampleSlice = append(sampleSlice, v)
 	}
 
+	fmt.Println("sample slice:", sampleSlice)
+
 	samplesMar, err := json.Marshal(sampleSlice)
+
+	//samplesMar, err := json.Marshal(Samples)
 	if err != nil {
-		fmt.Fprintf(w, "not marshlized")
+		fmt.Println(w, "not marshlized")
 	}
+	fmt.Println("samplesMar", string(samplesMar))
 
 	w.Write(samplesMar)
+	fmt.Println("this is multi get req")
 
 	return nil
 }
@@ -158,7 +201,7 @@ func GetBook(w http.ResponseWriter, id string) error {
 	if book, ok := Books[id]; ok {
 		booksMar, err := json.Marshal(book)
 		if err != nil {
-			fmt.Fprintf(w, "not marshlized")
+			fmt.Println(w, "not marshlized")
 		}
 		w.Write(booksMar)
 		return nil
@@ -172,7 +215,7 @@ func GetBook(w http.ResponseWriter, id string) error {
 
 	booksMar, err := json.Marshal(bookSlice)
 	if err != nil {
-		fmt.Fprintf(w, "not marshlized")
+		fmt.Println(w, "not marshlized")
 	}
 
 	w.Write(booksMar)
@@ -198,7 +241,7 @@ func PostSample(w http.ResponseWriter, data Sample) error {
 
 	samplesMar, err := json.Marshal(data)
 	if err != nil {
-		fmt.Fprintf(w, "not marshlized")
+		fmt.Println(w, "not marshlized")
 	}
 	w.Write(samplesMar)
 
@@ -219,7 +262,7 @@ func PostBook(w http.ResponseWriter, data Book) error {
 
 	samplesMar, err := json.Marshal(data)
 	if err != nil {
-		fmt.Fprintf(w, "not marshlized")
+		fmt.Println(w, "not marshlized")
 	}
 	w.Write(samplesMar)
 
