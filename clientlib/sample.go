@@ -28,6 +28,11 @@ type DeleteSampleRequest struct {
 	id string
 }
 
+type CreateFavBookRequest struct {
+	InputFavBookName string `json:"input_fav_book_name"`
+	SampleID         string `json:"sample_id"`
+}
+
 func (i *GetSampleRequest) Query() url.Values {
 	values := url.Values{
 		"id": []string{i.id},
@@ -63,6 +68,20 @@ func (c *Client) GetBook(ctx context.Context, bookID string) (*Book, error) {
 	fmt.Println("success")
 
 	return &payload, nil
+}
+
+func (c *Client) GetFavBook(ctx context.Context, sampleID string) (string, error) {
+	path := "favoritebook"
+	query := c.url.Query()
+	query.Add("id", sampleID)
+	var payload string
+	fmt.Println("get fav book url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
+
+	if err := c.Get(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
+		return "", fmt.Errorf(": %w", err)
+	}
+
+	return payload, nil
 }
 
 func (c *Client) ListSample(ctx context.Context) ([]*Sample, error) {
@@ -139,6 +158,26 @@ func (c *Client) CreateBook(ctx context.Context, inputBook *Book) ([]*Sample, er
 	return payload, nil
 }
 
+func (c *Client) CreateFavBook(ctx context.Context, inputFavBookRequest *CreateFavBookRequest) (string, error) {
+	path := "favoritebook"
+
+	body := CreateFavBookRequest{
+		InputFavBookName: inputFavBookRequest.InputFavBookName,
+		SampleID:         inputFavBookRequest.SampleID,
+	}
+
+	fmt.Println("create fav input name:", body.InputFavBookName)
+	fmt.Println("create fav input sample id:", body.SampleID)
+
+	var payload string
+	fmt.Println("fav book post", fmt.Sprintf("%s%s", c.url.String(), path))
+	if err := c.Post(ctx, fmt.Sprintf("%s%s", c.url.String(), path), body, &payload); err != nil {
+		return "", fmt.Errorf(": %w", err)
+	}
+
+	return payload, nil
+}
+
 func (c *Client) DeleteSample(ctx context.Context, id string) (*Sample, error) {
 	path := "sample"
 	query := c.url.Query()
@@ -164,4 +203,18 @@ func (c *Client) DeleteBook(ctx context.Context, bookID string) (*Book, error) {
 	}
 
 	return &payload, nil
+}
+
+func (c *Client) DeleteFavBook(ctx context.Context, sampleID string) (string, error) {
+	path := "favoritebook"
+	query := c.url.Query()
+	query.Add("id", sampleID)
+	var payload string
+	fmt.Println("fav book delete url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
+
+	if err := c.Delete(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
+		return "", fmt.Errorf(": %w", err)
+	}
+
+	return payload, nil
 }

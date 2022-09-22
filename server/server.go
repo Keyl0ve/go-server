@@ -20,6 +20,11 @@ type Book struct {
 	BookParentID string `json:"book_parent_id"`
 }
 
+type CreateFavBookRequest struct {
+	InputFavBookName string `json:"input_fav_book_name"`
+	SampleID         string `json:"sample_id"`
+}
+
 var Samples = map[string]*Sample{}
 var Books = map[string]*Book{}
 
@@ -138,18 +143,20 @@ func main() {
 	})
 
 	// ここから favoriteBook の処理
-	http.HandleFunc("/sample", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/favoritebook", func(w http.ResponseWriter, r *http.Request) {
 
-		var sampleData Sample
-		if err := json.NewDecoder(r.Body).Decode(&sampleData); err != nil {
+		var inputFavBookRequest CreateFavBookRequest
+		if err := json.NewDecoder(r.Body).Decode(&inputFavBookRequest); err != nil {
 			fmt.Errorf("decode flow failed: %w", err)
 		}
+
+		fmt.Println("       fav book")
 
 		switch r.Method {
 		case http.MethodGet:
 			queryParamSampleID := r.URL.Query().Get("id")
 			if queryParamSampleID != "" {
-				if err := GetSample(w, queryParamSampleID); err != nil {
+				if err := GetFavBook(w, queryParamSampleID); err != nil {
 					w.WriteHeader(http.StatusBadRequest)
 					_, err := w.Write([]byte("get method failed: %s"))
 					if err != nil {
@@ -171,7 +178,7 @@ func main() {
 			}
 
 		case http.MethodPost:
-			if err := PostSample(w, sampleData); err != nil {
+			if err := PostFavBook(w, inputFavBookRequest); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				_, err := w.Write([]byte("post method failed:"))
 				if err != nil {
@@ -186,7 +193,7 @@ func main() {
 			if queryParamSampleID == "" {
 				panic(fmt.Sprintf("please provide sample id"))
 			}
-			if err := DeleteSample(w, queryParamSampleID); err != nil {
+			if err := DeleteFavBook(w, queryParamSampleID); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				_, err := w.Write([]byte("delete method failed:"))
 				if err != nil {
@@ -294,6 +301,20 @@ func GetBook(w http.ResponseWriter, bookID string) error {
 	return nil
 }
 
+func GetFavBook(w http.ResponseWriter, sampleID string) error {
+	//for _, v := range
+	if sample, ok := Samples[sampleID]; ok {
+		samplesMar, err := json.Marshal(sample.FavoriteBook)
+		if err != nil {
+			return fmt.Errorf("cannot marshal : %w", err)
+		}
+		w.Write(samplesMar)
+		return nil
+	}
+
+	return fmt.Errorf("omgggggg")
+}
+
 func PostSample(w http.ResponseWriter, data Sample) error {
 	if _, ok := Samples[data.ID]; ok {
 		return fmt.Errorf("ID already exist")
@@ -340,6 +361,35 @@ func PostBook(w http.ResponseWriter, inputBook Book) error {
 	return nil
 }
 
+func PostFavBook(w http.ResponseWriter, inputFavBookRequest CreateFavBookRequest) error {
+	if sample, ok := Samples[inputFavBookRequest.SampleID]; ok {
+		sample.FavoriteBook = inputFavBookRequest.InputFavBookName
+		Samples[inputFavBookRequest.SampleID].FavoriteBook = inputFavBookRequest.InputFavBookName
+
+		favBookMar, err := json.Marshal(inputFavBookRequest.InputFavBookName)
+		if err != nil {
+			return fmt.Errorf("not marshlized : %w ", err)
+		}
+
+		if _, err := w.Write(favBookMar); err != nil {
+			return fmt.Errorf("cannnot write : %w ", err)
+		}
+		return nil
+	}
+
+	//Samples[data.ID] = &data
+	//favBookMar, err := json.Marshal(inputFavBookRequest.FavBookName)
+	//if err != nil {
+	//	return fmt.Errorf("not marshlized : %w ", err)
+	//}
+	//
+	//if _, err := w.Write(favBookMar); err != nil {
+	//	return fmt.Errorf("cannnot write : %w ", err)
+	//}
+
+	return nil
+}
+
 func DeleteSample(w http.ResponseWriter, id string) error {
 	if sample, ok := Samples[id]; ok {
 		delete(Samples, id)
@@ -364,6 +414,25 @@ func DeleteBook(w http.ResponseWriter, id string) error {
 		}
 
 		w.Write(deletedBook)
+		return nil
+	}
+
+	return nil
+}
+
+func DeleteFavBook(w http.ResponseWriter, sampleID string) error {
+	if sample, ok := Samples[sampleID]; ok {
+		//delete(Samples, sampleID)
+		targetFavBook, err := json.Marshal(sample.FavoriteBook)
+		if err != nil {
+			fmt.Errorf("not marshlized")
+		}
+
+		sample.FavoriteBook = ""
+
+		Samples[sampleID].FavoriteBook = ""
+
+		w.Write(targetFavBook)
 		return nil
 	}
 

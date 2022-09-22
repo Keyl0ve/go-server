@@ -19,7 +19,7 @@ func main() {
 		Name:         "kyo",
 		Email:        "kyo@gmail.com",
 		Books:        []*clientlib.Book{},
-		FavoriteBook: "novel1",
+		FavoriteBook: "default book",
 	}
 	createdSample, err := client.CreateSample(ctx, inputSample)
 
@@ -43,7 +43,7 @@ func main() {
 		Name:         "kyo2",
 		Email:        "kyo2@gmail.com",
 		Books:        []*clientlib.Book{},
-		FavoriteBook: "novel2",
+		FavoriteBook: "default book 2",
 	}
 	_, err = client.CreateSample(ctx, inputSample2)
 
@@ -81,7 +81,6 @@ func main() {
 	}
 	createdBook1, err := client.CreateBook(ctx, inputBook1)
 
-	//
 	inputBook2 := &clientlib.Book{
 		BookID:       "2",
 		BookName:     "book2",
@@ -132,7 +131,7 @@ func main() {
 	}
 
 	fmt.Println("\nDELETE sample...")
-	deleteSample, err := client.DeleteSample(ctx, inputSample.ID)
+	deleteSample, err := client.DeleteSample(ctx, inputSample2.ID)
 	if err != nil {
 		fmt.Errorf("cannot delete sample: %w", err)
 	}
@@ -182,4 +181,28 @@ func main() {
 		fmt.Println("list book name: ", v.BookName)
 		fmt.Println("list book email: ", v.BookParentID)
 	}
+
+	fmt.Println("\nGET favorite book before create...")
+	getFavBook, err := client.GetFavBook(ctx, createdSample.ID)
+	fmt.Println("get fav book name: ", getFavBook)
+
+	fmt.Println("\nCREATE favorite book...")
+	inputCreateFavRequest := &clientlib.CreateFavBookRequest{
+		InputFavBookName: "hahaha book",
+		SampleID:         createdSample.ID,
+	}
+	createdFavBook, err := client.CreateFavBook(ctx, inputCreateFavRequest)
+	fmt.Println("created fav book name: ", createdFavBook)
+
+	fmt.Println("\nGET favorite book after create...")
+	getFavBook, err = client.GetFavBook(ctx, createdSample.ID)
+	fmt.Println("get fav book name: ", getFavBook)
+
+	fmt.Println("\nDELETE favorite book...")
+	deletedFavBook, err := client.DeleteFavBook(ctx, createdSample.ID)
+	fmt.Println("deleted fav book name: ", deletedFavBook)
+
+	fmt.Println("\nGET favorite book after delete...")
+	getFavBook, err = client.GetFavBook(ctx, createdSample.ID)
+	fmt.Println("get fav book name: ", getFavBook)
 }
