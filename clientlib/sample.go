@@ -53,11 +53,14 @@ func (c *Client) GetBook(ctx context.Context, bookID string) (*Book, error) {
 	path := "book"
 	query := c.url.Query()
 	query.Add("book_id", bookID)
+	//query.Add("book_parent_id", bookParentID)
 	var payload Book
 	fmt.Println("get book url: ", fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()))
 	if err := c.Get(ctx, fmt.Sprintf("%s%s?%s", c.url.String(), path, query.Encode()), &payload); err != nil {
+		fmt.Println("this is error in get book")
 		return nil, fmt.Errorf(": %w", err)
 	}
+	fmt.Println("success")
 
 	return &payload, nil
 }
@@ -112,7 +115,7 @@ func (c *Client) CreateSample(ctx context.Context, input *Sample) (*Sample, erro
 	return &payload, nil
 }
 
-func (c *Client) CreateBook(ctx context.Context, inputBook *Book) (*Sample, error) {
+func (c *Client) CreateBook(ctx context.Context, inputBook *Book) ([]*Sample, error) {
 	path := "book"
 	body := Book{
 		BookID:       inputBook.BookID,
@@ -127,13 +130,13 @@ func (c *Client) CreateBook(ctx context.Context, inputBook *Book) (*Sample, erro
 	//query.Add("id", input.BookParentID)
 
 	fmt.Println("book post: ", fmt.Sprintf("%s%s", c.url.String(), path))
-	var payload Sample
+	var payload []*Sample
 	if err := c.Post(ctx, fmt.Sprintf("%s%s", c.url.String(), path), body, &payload); err != nil {
 		fmt.Println("this is error in Post create book")
 		return nil, fmt.Errorf(": %w", err)
 	}
 	fmt.Println("create book payload: ", payload)
-	return &payload, nil
+	return payload, nil
 }
 
 func (c *Client) DeleteSample(ctx context.Context, id string) (*Sample, error) {

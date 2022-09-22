@@ -23,6 +23,8 @@ type Book struct {
 var Samples = map[string]*Sample{}
 var Books = map[string]*Book{}
 
+var ArraySample []Sample
+
 // TODO 名前、error 処理
 
 func main() {
@@ -107,9 +109,10 @@ func main() {
 
 		switch r.Method {
 		case http.MethodGet:
-			param := r.URL.Query().Get("book_id")
+			queryParamBookID := r.URL.Query().Get("book_id")
+			//queryParamBookParentID := r.URL.Query().Get("book_parent_id")
 
-			if err := GetBook(w, param); err != nil {
+			if err := GetBook(w, queryParamBookID); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				_, err := w.Write([]byte("get method failed: %s"))
 				if err != nil {
@@ -201,32 +204,59 @@ func ListSample(w http.ResponseWriter) error {
 	return nil
 }
 
-func GetBook(w http.ResponseWriter, id string) error {
-	if book, ok := Books[id]; ok {
-		booksMar, err := json.Marshal(book)
+func GetBook(w http.ResponseWriter, bookID string) error {
+	//if book, ok := Books[id]; ok {
+	//	booksMar, err := json.Marshal(book)
+	//	if err != nil {
+	//		return fmt.Errorf("not marshlized : %w", err)
+	//	}
+	//	if _, err := w.Write(booksMar); err != nil {
+	//		return fmt.Errorf("cannot write : %w", err)
+	//	}
+	//	return nil
+	//}
+	fmt.Println("start get book (server)")
+	fmt.Println("books", Books)
+	fmt.Println("samples", Samples)
+	if book, ok := Books[bookID]; ok {
+		bookMar, err := json.Marshal(book)
 		if err != nil {
-			return fmt.Errorf("not marshlized : %w", err)
+			fmt.Println(w, "not marshlized")
 		}
-		if _, err := w.Write(booksMar); err != nil {
+		fmt.Println("boookMaraaaa", string(bookMar))
+
+		if _, err := w.Write(bookMar); err != nil {
 			return fmt.Errorf("cannot write : %w", err)
 		}
+		//w.Write()
 		return nil
 	}
 
-	bookSlice := make([]*Book, 0, len(Books))
+	fmt.Println("start list book (server)", Books)
 
+	bookSlice := make([]*Book, 0, len(Books))
 	for _, v := range Books {
 		bookSlice = append(bookSlice, v)
 	}
 
-	booksMar, err := json.Marshal(bookSlice)
+	bookMar, err := json.Marshal(bookSlice)
 	if err != nil {
 		fmt.Println(w, "not marshlized")
 	}
+	fmt.Println("2 boookMaraaaa", string(bookMar))
 
-	if _, err := w.Write(booksMar); err != nil {
+	if _, err := w.Write(bookMar); err != nil {
 		return fmt.Errorf("cannot write : %w", err)
 	}
+
+	//booksMar, err := json.Marshal(bookSlice)
+	//if err != nil {
+	//	fmt.Println(w, "not marshlized")
+	//}
+	//
+	//if _, err := w.Write(booksMar); err != nil {
+	//	return fmt.Errorf("cannot write : %w", err)
+	//}
 
 	return nil
 }
@@ -249,12 +279,16 @@ func PostSample(w http.ResponseWriter, data Sample) error {
 
 	samplesMar, err := json.Marshal(data)
 	if err != nil {
+		fmt.Println("sampleMar is error!")
 		return fmt.Errorf("not marshlized : %w ", err)
 	}
+	//err = json.Unmarshal(samplesMar, &ArraySample)
+
 	if _, err := w.Write(samplesMar); err != nil {
+		fmt.Println("here is error")
 		return fmt.Errorf("cannnot write : %w ", err)
 	}
-	fmt.Println("post book", string(samplesMar))
+	fmt.Println("write sample", string(samplesMar))
 
 	return nil
 }
@@ -279,6 +313,7 @@ func PostBook(w http.ResponseWriter, inputBook Book) error {
 	fmt.Println("post book...")
 
 	//Books[inputBook.BookID] = &inputBook
+	Books[inputBook.BookID] = &inputBook
 
 	Samples[inputBook.BookParentID].Books = append(Samples[inputBook.BookParentID].Books, &inputBook)
 	sampleSlice := make([]*Sample, 0, len(Samples))
@@ -296,7 +331,7 @@ func PostBook(w http.ResponseWriter, inputBook Book) error {
 		return fmt.Errorf("cannot write : %w", err)
 	}
 
-	fmt.Println("post book", string(sampleMar))
+	fmt.Println("write book", string(sampleMar))
 
 	return nil
 }

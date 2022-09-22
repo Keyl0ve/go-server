@@ -24,7 +24,6 @@ func (c *Client) Get(ctx context.Context, pathQuery string, payload interface{},
 	if err := c.Do(ctx, req, payload); err != nil {
 		return fmt.Errorf(": %w", err)
 	}
-	fmt.Println("dodo pay", payload)
 	return nil
 }
 

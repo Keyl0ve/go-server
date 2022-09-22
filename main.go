@@ -80,30 +80,44 @@ func main() {
 		BookParentID: inputSample.ID,
 	}
 	//if inputBook1.BookParentID == "" {
-	createdSample, err = client.CreateBook(ctx, inputBook1)
+	createdBook1, err := client.CreateBook(ctx, inputBook1)
+
 	//
-	//inputBook2 := &clientlib.Book{
-	//	BookID:       "1",
-	//	BookName:     "book1",
-	//	BookParentID: inputSample.ID,
-	//}
-	////if inputBook1.BookParentID == "" {
-	//createdSample, err = client.CreateBook(ctx, inputBook2)
+	inputBook2 := &clientlib.Book{
+		BookID:       "2",
+		BookName:     "book2",
+		BookParentID: inputSample.ID,
+	}
+	//if inputBook1.BookParentID == "" {
+	createdBook1, err = client.CreateBook(ctx, inputBook2)
+
+	inputBook3 := &clientlib.Book{
+		BookID:       "3",
+		BookName:     "book3",
+		BookParentID: inputSample2.ID,
+	}
+	//if inputBook1.BookParentID == "" {
+	createdBook1, err = client.CreateBook(ctx, inputBook3)
 
 	//fmt.Println("createdBook1  parent id:  ", createdSample.ID)
 	//fmt.Println("createdBook1  id:  ", createdBook1.Books)
 	//fmt.Println("createdBook1  name:  ", createdBook1.Books[1].BookName)
 	//fmt.Println("createdBook1  parentID:  ", createdBook1.Books[1].BookParentID)
 
-	fmt.Println("created id: ", createdSample.ID)
-	fmt.Println("created name: ", createdSample.Name)
-	fmt.Println("created email: ", createdSample.Email)
-	for i, v := range createdSample.Books {
-		fmt.Println("created book[", i, "] id: ", "...", v.BookID)
-		fmt.Println("created book[", i, "] name: ", "...", v.BookName)
-		fmt.Println("created book[", i, "] parentID: ", "...", v.BookParentID)
+	//fmt.Println("created id: ", createdBook1)
+	//fmt.Println("created name: ", createdSample.Name)
+	//fmt.Println("created email: ", createdSample.Email)
+	for i, v := range createdBook1 {
+		fmt.Println("created book[", i, "] sample id: ", "...", v.ID)
+		fmt.Println("created book[", i, "] sample name: ", "...", v.Name)
+		fmt.Println("created book[", i, "] sample email: ", "...", v.Email)
+		for _, vv := range v.Books {
+			fmt.Println("created book[", i, "] sample book id: ", "...", vv.BookID)
+			fmt.Println("created book[", i, "] sample book name: ", "...", vv.BookName)
+			fmt.Println("created book[", i, "] sample book parent id: ", "...", vv.BookParentID)
+		}
+		fmt.Println("created book[", i, "] sample favorite book: ", "...", v.FavoriteBook)
 	}
-	fmt.Println("created favorite id: ", createdSample.FavoriteBook)
 
 	if err != nil {
 		fmt.Println("cannot create book: ", err)
@@ -148,7 +162,7 @@ func main() {
 	//createdSample.Books = append(createdSample.Books, createdBook3)
 
 	fmt.Println("\nGET Book...")
-	getBook, err := client.GetBook(ctx, createdSample.Books[0].BookID)
+	getBook, err := client.GetBook(ctx, inputBook1.BookID)
 	if err != nil {
 		fmt.Errorf("cannot get book: %w", err)
 	}
@@ -157,22 +171,22 @@ func main() {
 	fmt.Println("get book name: ", getBook.BookName)
 	fmt.Println("get book email: ", getBook.BookParentID)
 
-	fmt.Println("\nLIST sample...")
-	listSample, err := client.ListSample(ctx)
-	if err != nil {
-		fmt.Errorf("cannot list sample: %w", err)
-	}
-	for _, v := range listSample {
-		fmt.Println("list sample id: ", v.ID)
-		fmt.Println("list sample name: ", v.Name)
-		fmt.Println("list sample email: ", v.Email)
-		for i, vv := range v.Books {
-			fmt.Println("created book[", i, "] id: ", "...", vv.BookID)
-			fmt.Println("created book[", i, "] name: ", "...", vv.BookName)
-			fmt.Println("created book[", i, "] parentID: ", "...", vv.BookParentID)
-		}
-		fmt.Println("list favorite id: ", v.FavoriteBook)
-	}
+	//fmt.Println("\nLIST book...")
+	//listSample, err := client.ListSample(ctx)
+	//if err != nil {
+	//	fmt.Errorf("cannot list sample: %w", err)
+	//}
+	//for _, v := range listSample {
+	//	fmt.Println("list sample id: ", v.ID)
+	//	fmt.Println("list sample name: ", v.Name)
+	//	fmt.Println("list sample email: ", v.Email)
+	//	for i, vv := range v.Books {
+	//		fmt.Println("created book[", i, "] id: ", "...", vv.BookID)
+	//		fmt.Println("created book[", i, "] name: ", "...", vv.BookName)
+	//		fmt.Println("created book[", i, "] parentID: ", "...", vv.BookParentID)
+	//	}
+	//	fmt.Println("list favorite id: ", v.FavoriteBook)
+	//}
 
 	fmt.Println("\nLIST book...")
 	listBook, err := client.ListBook(ctx)
@@ -201,9 +215,9 @@ func main() {
 	fmt.Println("delete sample name: ", deleteSample.Name)
 	fmt.Println("delete sample email: ", deleteSample.Email)
 	for i, v := range deleteSample.Books {
-		fmt.Println("created book[", i, "] id: ", "...", v.BookID)
-		fmt.Println("created book[", i, "] name: ", "...", v.BookName)
-		fmt.Println("created book[", i, "] parentID: ", "...", v.BookParentID)
+		fmt.Println("delete book[", i, "] id: ", "...", v.BookID)
+		fmt.Println("delete book[", i, "] name: ", "...", v.BookName)
+		fmt.Println("delete book[", i, "] parentID: ", "...", v.BookParentID)
 	}
 	fmt.Println("delete favorite id: ", deleteSample.FavoriteBook)
 
@@ -233,9 +247,9 @@ func main() {
 		fmt.Println("list sample name: ", v.Name)
 		fmt.Println("list sample email: ", v.Email)
 		for i, vv := range v.Books {
-			fmt.Println("created book[", i, "] id: ", "...", vv.BookID)
-			fmt.Println("created book[", i, "] id: ", "...", vv.BookName)
-			fmt.Println("created book[", i, "] id: ", "...", vv.BookParentID)
+			fmt.Println("list book[", i, "] id: ", "...", vv.BookID)
+			fmt.Println("list book[", i, "] id: ", "...", vv.BookName)
+			fmt.Println("list book[", i, "] id: ", "...", vv.BookParentID)
 		}
 		fmt.Println("list favorite id: ", v.FavoriteBook)
 	}

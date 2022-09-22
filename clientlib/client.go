@@ -46,11 +46,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request, payload interface{})
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		fmt.Println("this is error in dodododdododo")
 		return fmt.Errorf(": %w", err)
 	}
 	defer resp.Body.Close()
-	fmt.Println("ooo")
+
 	if err := json.NewDecoder(resp.Body).Decode(payload); err != nil {
 		fmt.Println("this is error in Do: ", err)
 		return fmt.Errorf(": %w", err)
