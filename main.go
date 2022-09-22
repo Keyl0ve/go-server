@@ -79,23 +79,50 @@ func main() {
 		BookName:     "book1",
 		BookParentID: inputSample.ID,
 	}
-	createdBook1, err := client.CreateBook(ctx, inputBook1)
-	fmt.Println("createdBook1  id:  ", createdBook1.BookID)
-	fmt.Println("createdBook1  name:  ", createdBook1.BookName)
-	fmt.Println("createdBook1  parentID:  ", createdBook1.BookParentID)
+	//if inputBook1.BookParentID == "" {
+	createdSample, err = client.CreateBook(ctx, inputBook1)
+	//
+	//inputBook2 := &clientlib.Book{
+	//	BookID:       "1",
+	//	BookName:     "book1",
+	//	BookParentID: inputSample.ID,
+	//}
+	////if inputBook1.BookParentID == "" {
+	//createdSample, err = client.CreateBook(ctx, inputBook2)
+
+	//fmt.Println("createdBook1  parent id:  ", createdSample.ID)
+	//fmt.Println("createdBook1  id:  ", createdBook1.Books)
+	//fmt.Println("createdBook1  name:  ", createdBook1.Books[1].BookName)
+	//fmt.Println("createdBook1  parentID:  ", createdBook1.Books[1].BookParentID)
+
+	fmt.Println("created id: ", createdSample.ID)
+	fmt.Println("created name: ", createdSample.Name)
+	fmt.Println("created email: ", createdSample.Email)
+	for i, v := range createdSample.Books {
+		fmt.Println("created book[", i, "] id: ", "...", v.BookID)
+		fmt.Println("created book[", i, "] name: ", "...", v.BookName)
+		fmt.Println("created book[", i, "] parentID: ", "...", v.BookParentID)
+	}
+	fmt.Println("created favorite id: ", createdSample.FavoriteBook)
+
 	if err != nil {
 		fmt.Println("cannot create book: ", err)
 	}
+	//} else {
+	//	if inputBook1.BookParentID == inputSample.ID {
+	//		createdBookHasParentID1, err := client.CreateBookHasParentID(ctx, inputBook1, inputSample)
+	//	}
+	//}
 
-	inputBook2 := &clientlib.Book{
-		BookID:       "2",
-		BookName:     "book2",
-		BookParentID: inputSample2.ID,
-	}
-	createdBook2, err := client.CreateBook(ctx, inputBook2)
-	fmt.Println("createdBook2 id:  ", createdBook2.BookID)
-	fmt.Println("createdBook2 name:  ", createdBook2.BookName)
-	fmt.Println("createdBook2 parentID:  ", createdBook2.BookParentID)
+	//inputBook2 := &clientlib.Book{
+	//	BookID:       "2",
+	//	BookName:     "book2",
+	//	BookParentID: inputSample2.ID,
+	//}
+	//createdBook2, err := client.CreateBook(ctx, inputBook2)
+	//fmt.Println("createdBook2 id:  ", createdBook2.BookID)
+	//fmt.Println("createdBook2 name:  ", createdBook2.BookName)
+	//fmt.Println("createdBook2 parentID:  ", createdBook2.BookParentID)
 
 	//inputBook3 := &clientlib.Book{
 	//	BookID:       "3",
@@ -121,7 +148,7 @@ func main() {
 	//createdSample.Books = append(createdSample.Books, createdBook3)
 
 	fmt.Println("\nGET Book...")
-	getBook, err := client.GetBook(ctx, createdBook1.BookID)
+	getBook, err := client.GetBook(ctx, createdSample.Books[0].BookID)
 	if err != nil {
 		fmt.Errorf("cannot get book: %w", err)
 	}

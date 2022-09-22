@@ -28,16 +28,18 @@ func (c *Client) Get(ctx context.Context, pathQuery string, payload interface{},
 	return nil
 }
 
-func (c *Client) Post(ctx context.Context, pathQuery string, body, payload interface{}) error {
+func (c *Client) Post(ctx context.Context, endpoint string, body, payload interface{}) error {
 	requestBody, err := json.Marshal(body)
+	fmt.Println("post request Body:", string(requestBody))
 	if err != nil {
 		return fmt.Errorf(": %w", err)
 	}
 
-	req, err := c.NewRequest(ctx, http.MethodPost, pathQuery, bytes.NewBuffer(requestBody))
+	req, err := c.NewRequest(ctx, http.MethodPost, endpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return fmt.Errorf(": %w", err)
 	}
+	fmt.Println("req : ", req)
 
 	if err := c.Do(ctx, req, payload); err != nil {
 		return fmt.Errorf(": %w", err)

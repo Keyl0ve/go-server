@@ -107,33 +107,32 @@ func (c *Client) CreateSample(ctx context.Context, input *Sample) (*Sample, erro
 	if err := c.Post(ctx, fmt.Sprintf("%s%s", c.url.String(), path), body, &payload); err != nil {
 		return nil, fmt.Errorf(": %w", err)
 	}
+	fmt.Println("create sample payload: ", payload)
 
 	return &payload, nil
 }
 
-func (c *Client) CreateBook(ctx context.Context, input *Book) (*Book, error) {
+func (c *Client) CreateBook(ctx context.Context, inputBook *Book) (*Sample, error) {
 	path := "book"
 	body := Book{
-		BookID:       input.BookID,
-		BookName:     input.BookName,
-		BookParentID: input.BookParentID,
+		BookID:       inputBook.BookID,
+		BookName:     inputBook.BookName,
+		BookParentID: inputBook.BookParentID,
 	}
 
 	//Sample[input.ParentID]Book = append(Sample[input.ParentID]Book, body)
-
-	fmt.Println("this is body", body.BookID)
-	fmt.Println(body.BookName)
-	fmt.Println(body.BookParentID)
+	//fmt.Println("this is body id", body.ID)
 
 	//query := c.url.Query()
 	//query.Add("id", input.BookParentID)
 
 	fmt.Println("book post: ", fmt.Sprintf("%s%s", c.url.String(), path))
-	var payload Book
+	var payload Sample
 	if err := c.Post(ctx, fmt.Sprintf("%s%s", c.url.String(), path), body, &payload); err != nil {
+		fmt.Println("this is error in Post create book")
 		return nil, fmt.Errorf(": %w", err)
 	}
-
+	fmt.Println("create book payload: ", payload)
 	return &payload, nil
 }
 

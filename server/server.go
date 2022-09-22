@@ -23,6 +23,8 @@ type Book struct {
 var Samples = map[string]*Sample{}
 var Books = map[string]*Book{}
 
+// TODO 名前、error 処理
+
 func main() {
 	http.HandleFunc("/sample", func(w http.ResponseWriter, r *http.Request) {
 
@@ -91,13 +93,17 @@ func main() {
 		}
 	})
 
-	// これから book の処理
+	// ここから book の処理
 	http.HandleFunc("/book", func(w http.ResponseWriter, r *http.Request) {
 
-		var data *Book
-		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		var book Book
+		if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
 			fmt.Errorf("decode flow failed: %w", err)
 		}
+		//var sample Sample
+		//if err := json.NewDecoder(r.Body).Decode(&sample); err != nil {
+		//	fmt.Errorf("decode flow failed: %w", err)
+		//}
 
 		switch r.Method {
 		case http.MethodGet:
@@ -114,14 +120,17 @@ func main() {
 			}
 
 		case http.MethodPost:
-			fmt.Println("koko", data)
-			if err := PostBook(w, *data); err != nil {
+			fmt.Println("book book: ", book)
+			if err := PostBook(w, book); err != nil {
+				fmt.Println("this is error method post book")
 				w.WriteHeader(http.StatusBadRequest)
 				_, err := w.Write([]byte("post method failed:"))
 				if err != nil {
 					panic(err)
 				}
 			} else {
+				fmt.Println("ok book post")
+
 				w.WriteHeader(http.StatusOK)
 			}
 
@@ -159,10 +168,6 @@ func GetSample(w http.ResponseWriter, id string) error {
 
 	sampleSlice := make([]*Sample, 0, len(Samples))
 
-	//for _, v := range Samples {
-	//	sampleSlice = append(sampleSlice, v)
-	//}
-
 	samplesMar, err := json.Marshal(sampleSlice)
 	if err != nil {
 		fmt.Println(w, "not marshlized")
@@ -183,9 +188,8 @@ func ListSample(w http.ResponseWriter) error {
 
 	fmt.Println("sample slice:", sampleSlice)
 
+	// TODO samplesMar
 	samplesMar, err := json.Marshal(sampleSlice)
-
-	//samplesMar, err := json.Marshal(Samples)
 	if err != nil {
 		fmt.Println(w, "not marshlized")
 	}
@@ -201,9 +205,11 @@ func GetBook(w http.ResponseWriter, id string) error {
 	if book, ok := Books[id]; ok {
 		booksMar, err := json.Marshal(book)
 		if err != nil {
-			fmt.Println(w, "not marshlized")
+			return fmt.Errorf("not marshlized : %w", err)
 		}
-		w.Write(booksMar)
+		if _, err := w.Write(booksMar); err != nil {
+			return fmt.Errorf("cannot write : %w", err)
+		}
 		return nil
 	}
 
@@ -218,7 +224,9 @@ func GetBook(w http.ResponseWriter, id string) error {
 		fmt.Println(w, "not marshlized")
 	}
 
-	w.Write(booksMar)
+	if _, err := w.Write(booksMar); err != nil {
+		return fmt.Errorf("cannot write : %w", err)
+	}
 
 	return nil
 }
@@ -241,14 +249,17 @@ func PostSample(w http.ResponseWriter, data Sample) error {
 
 	samplesMar, err := json.Marshal(data)
 	if err != nil {
-		fmt.Println(w, "not marshlized")
+		return fmt.Errorf("not marshlized : %w ", err)
 	}
-	w.Write(samplesMar)
+	if _, err := w.Write(samplesMar); err != nil {
+		return fmt.Errorf("cannnot write : %w ", err)
+	}
+	fmt.Println("post book", string(samplesMar))
 
 	return nil
 }
 
-func PostBook(w http.ResponseWriter, data Book) error {
+func PostBook(w http.ResponseWriter, inputBook Book) error {
 	//if _, ok := Samples[data.ID]; ok {
 	//	return fmt.Errorf("ID already exist")
 	//}
@@ -258,13 +269,34 @@ func PostBook(w http.ResponseWriter, data Book) error {
 	//bookSlice := make([]*Book, 0, len(Books))
 	//
 	//bookSlice = append(bookSlice, data)
-	Books[data.BookID] = &data
+	//sampleSlice := make([]*Sample, 0, len(Samples))
 
-	samplesMar, err := json.Marshal(data)
+	//for _, v := range Samples {
+	//	sampleSlice = append(sampleSlice, v)
+	//}
+	//
+	//Books[inputBook.BookID] = &inputBook
+	fmt.Println("post book...")
+
+	//Books[inputBook.BookID] = &inputBook
+
+	Samples[inputBook.BookParentID].Books = append(Samples[inputBook.BookParentID].Books, &inputBook)
+	sampleSlice := make([]*Sample, 0, len(Samples))
+
+	for _, v := range Samples {
+		sampleSlice = append(sampleSlice, v)
+	}
+
+	sampleMar, err := json.Marshal(sampleSlice)
 	if err != nil {
 		fmt.Println(w, "not marshlized")
 	}
-	w.Write(samplesMar)
+
+	if _, err := w.Write(sampleMar); err != nil {
+		return fmt.Errorf("cannot write : %w", err)
+	}
+
+	fmt.Println("post book", string(sampleMar))
 
 	return nil
 }
