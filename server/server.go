@@ -136,6 +136,68 @@ func main() {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
+
+	// ここから favoriteBook の処理
+	http.HandleFunc("/sample", func(w http.ResponseWriter, r *http.Request) {
+
+		var sampleData Sample
+		if err := json.NewDecoder(r.Body).Decode(&sampleData); err != nil {
+			fmt.Errorf("decode flow failed: %w", err)
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			queryParamSampleID := r.URL.Query().Get("id")
+			if queryParamSampleID != "" {
+				if err := GetSample(w, queryParamSampleID); err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					_, err := w.Write([]byte("get method failed: %s"))
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					w.WriteHeader(http.StatusOK)
+				}
+			} else {
+				if err := ListSample(w); err != nil {
+					w.WriteHeader(http.StatusBadRequest)
+					_, err := w.Write([]byte("get method failed: %s"))
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					w.WriteHeader(http.StatusOK)
+				}
+			}
+
+		case http.MethodPost:
+			if err := PostSample(w, sampleData); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				_, err := w.Write([]byte("post method failed:"))
+				if err != nil {
+					panic(err)
+				}
+			} else {
+				w.WriteHeader(http.StatusOK)
+			}
+
+		case http.MethodDelete:
+			queryParamSampleID := r.URL.Query().Get("id")
+			if queryParamSampleID == "" {
+				panic(fmt.Sprintf("please provide sample id"))
+			}
+			if err := DeleteSample(w, queryParamSampleID); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				_, err := w.Write([]byte("delete method failed:"))
+				if err != nil {
+					panic(err)
+				}
+			}
+		default:
+			w.Write([]byte("delete method failed:"))
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
 	http.ListenAndServe(":8080", nil)
 }
 
