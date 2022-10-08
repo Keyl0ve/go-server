@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/Keyl0ve/go-server/clientlib"
+	"github.com/Keyl0ve/go-server/REST/clientlib"
 	"net/http"
 )
 
