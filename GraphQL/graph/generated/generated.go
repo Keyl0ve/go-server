@@ -38,6 +38,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Todo() TodoResolver
 }
 
 type DirectiveRoot struct {
@@ -49,8 +50,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Todos  func(childComplexity int) int
-		Viewer func(childComplexity int) int
+		Todos func(childComplexity int) int
 	}
 
 	Todo struct {
@@ -71,7 +71,9 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Todos(ctx context.Context) ([]*model.Todo, error)
-	Viewer(ctx context.Context) (*model.User, error)
+}
+type TodoResolver interface {
+	User(ctx context.Context, obj *model.Todo) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -107,13 +109,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Todos(childComplexity), true
-
-	case "Query.viewer":
-		if e.complexity.Query.Viewer == nil {
-			break
-		}
-
-		return e.complexity.Query.Viewer(childComplexity), true
 
 	case "Todo.done":
 		if e.complexity.Todo.Done == nil {
@@ -226,11 +221,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema.graphqls", Input: `# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type Todo {
+	{Name: "../schema.graphqls", Input: `type Todo {
   id: ID!
   text: String!
   done: Boolean!
@@ -244,7 +235,6 @@ type User {
 
 type Query {
   todos: [Todo!]!
-  viewer: User!
 }
 
 input NewTodo {
@@ -445,56 +435,6 @@ func (ec *executionContext) fieldContext_Query_todos(ctx context.Context, field 
 				return ec.fieldContext_Todo_user(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_viewer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_viewer(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Viewer(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋKeyl0veᚋgoᚑserverᚋGraphQLᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_viewer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "name":
-				return ec.fieldContext_User_name(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -775,7 +715,7 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
+		return ec.resolvers.Todo().User(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -796,8 +736,8 @@ func (ec *executionContext) fieldContext_Todo_user(ctx context.Context, field gr
 	fc = &graphql.FieldContext{
 		Object:     "Todo",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -2797,29 +2737,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "viewer":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_viewer(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -2858,29 +2775,42 @@ func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Todo_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "text":
 
 			out.Values[i] = ec._Todo_text(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "done":
 
 			out.Values[i] = ec._Todo_done(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "user":
+			field := field
 
-			out.Values[i] = ec._Todo_user(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Todo_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
